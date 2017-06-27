@@ -1,5 +1,6 @@
 package arsibi_has_no_website.pokedex;
-
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
@@ -25,6 +26,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -40,6 +42,9 @@ public class MainActivity extends AppCompatActivity {
     Button getButton;
     AutoCompleteTextView atv;
     StatsAdapter adapter;
+    Cacher c;
+    boolean imageAvailable=false;
+    String path;
     List<StatPair> pairs = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +64,13 @@ public class MainActivity extends AppCompatActivity {
         getButton.setClickable(false);
         InputMethodManager inputMethodManager = (InputMethodManager) this.getSystemService(INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        File file=new File(getCacheDir(),((AutoCompleteTextView) findViewById(R.id.autotext)).getText().toString().toLowerCase()+".jpg");
+        path=((AutoCompleteTextView) findViewById(R.id.autotext)).getText().toString().toLowerCase()+".jpg";
+        imageAvailable=false;
+        if(!file.exists())
+        c=new Cacher(file);
+        else
+            imageAvailable=true;
         ImageHandlerTask task = new ImageHandlerTask();
         task.execute("http://pokeapi.co/api/v2/pokemon/" + ((AutoCompleteTextView) findViewById(R.id.autotext)).getText().toString().toLowerCase());
     }
@@ -73,6 +85,14 @@ public class MainActivity extends AppCompatActivity {
         }
         return list;
     }
+
+    public void openHistory(View v){
+        Intent intent = new Intent(this,History.class);
+        startActivity(intent);
+    }
+
+
+
 
     public class ImageHandlerTask extends AsyncTask<String, Void, String> {
         @Override
@@ -138,17 +158,16 @@ public class MainActivity extends AppCompatActivity {
 
         public void getAndSetStats(JSONObject json) throws JSONException {
             putName(json);
-            try {
-                putEvolutionChain(json);
-            } catch (Exception e) {
-                Log.d("MOO", e.toString());
-            }
+            if(imageAvailable==true)
+                putImage(json);
+            putEvolutionChain(json);
             putId(json);
             putWeight(json);
             putHeight(json);
             putTypes(json);
             putMoves(json);
-            putImage(json);
+            if(imageAvailable==false)
+                putImage(json);
 
         }
 
@@ -186,14 +205,14 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        public void putTypes(JSONObject json) throws JSONException {
+        public void putTypes(JSONObject jso) throws JSONException {
+            final JSONObject json=jso;
             JSONArray arr = json.getJSONArray("types");
             String s = "Type";
             String type = "";
             for (int i = arr.length() - 1; i >= 0; i--) {
                 type = ((JSONObject) arr.get(i)).getJSONObject("type").getString("name");
                 addPairs(s, type.substring(0, 1).toUpperCase() + type.substring(1));
-
                 s = "";
             }
         }
@@ -210,21 +229,26 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void putEvolutionChain(JSONObject json) throws JSONException {
-            String urlstring = json.getJSONObject("species").getString("url");
-            try {
-                URL url = new URL(urlstring);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                String input = convertString(connection.getInputStream());
-                JSONObject jsonObject = new JSONObject(input);
-                urlstring = jsonObject.getJSONObject("evolution_chain").getString("url");
-                url = new URL(urlstring);
-                HttpURLConnection connection2 = (HttpURLConnection) url.openConnection();
-                String input2 = convertString(connection2.getInputStream());
-                JSONObject jsonObject2 = new JSONObject(input2);
-                processEvolution(jsonObject2);
-            } catch (MalformedURLException e) {
-            } catch (IOException e) {
-            }
+            final String urlstr = json.getJSONObject("species").getString("url");
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        URL url = new URL(urlstr);
+                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        String input = convertString(connection.getInputStream());
+                        JSONObject jsonObject = new JSONObject(input);
+                        String urlstring = jsonObject.getJSONObject("evolution_chain").getString("url");
+                        url = new URL(urlstring);
+                        HttpURLConnection connection2 = (HttpURLConnection) url.openConnection();
+                        String input2 = convertString(connection2.getInputStream());
+                        JSONObject jsonObject2 = new JSONObject(input2);
+                        processEvolution(jsonObject2);
+                    } catch (MalformedURLException e) {
+                    } catch (IOException e) {
+                    }catch (JSONException e){}
+                }
+            }).start();
         }
 
         public void processEvolution(JSONObject jsonObject) throws JSONException {
@@ -233,12 +257,13 @@ public class MainActivity extends AppCompatActivity {
             jsonObject = jsonObject.getJSONObject("chain");
             Log.d("MOO", "hi");
             Log.d("MOO", jsonObject.toString());
+            int index=0;
             while (jsonObject.has("species")) {
                 Log.d("MOO", "hi");
                 s = jsonObject.getJSONObject("species").getString("name");
                 Log.d("MOO", s);
-                addPairs(evolve, s.substring(0, 1).toUpperCase() + s.substring(1));
-
+                addPairs(evolve, s.substring(0, 1).toUpperCase() + s.substring(1),index);
+                index++;
                 evolve = "";
                 if (jsonObject.has("evolves_to")) {
                     if (jsonObject.getJSONArray("evolves_to").length() != 0)
@@ -260,19 +285,28 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     ImageView img = (ImageView) findViewById(R.id.imageView);
-                    Picasso.with(MainActivity.this).load(str).into(img);
-
+                    if(imageAvailable==false)
+                        Picasso.with(MainActivity.this).load(str).into(img);
+                    else
+                        img.setImageURI(Uri.fromFile(new File(getCacheDir(),path)));
                 }
             });
         }
-
-        public void addPairs(String s, String z) {
+        public void addPairs(String s, String z,int ... indices) {
+            int inde=-1;
+            if(indices.length!=0)
+                inde=indices[0];
+            Log.d("MOO",Integer.toString(inde));
+            final int index=inde;
             final String s1 = s;
             final String s2 = z;
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    pairs.add(new StatPair(s1, s2));
+                    if(index==-1)
+                        pairs.add(new StatPair(s1, s2));
+                    else
+                        pairs.add(index,new StatPair(s1, s2));
                     adapter.notifyDataSetChanged();
                 }
             });

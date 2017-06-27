@@ -10,7 +10,7 @@
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
+        android:layout_toStartOf="@+id/history"
         android:layout_alignParentTop="true"
         android:onClick="loadImage"
         android:text="Search" />
@@ -52,5 +52,15 @@
         android:layout_alignParentEnd="true"
         android:layout_below="@+id/name"
         android:layout_toStartOf="@+id/button" />
+
+    <ImageButton
+        android:id="@+id/history"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/imageView"
+        android:layout_alignParentEnd="true"
+        android:backgroundTint="#000000"
+        android:onClick="openHistory"
+        app:srcCompat="@android:drawable/ic_menu_recent_history" />
 
 </RelativeLayout>
