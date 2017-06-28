@@ -281,9 +281,16 @@ public class MainActivity extends AppCompatActivity {
 
         public void putImage(JSONObject json) throws JSONException {
             final String str = json.getJSONObject("sprites").getString("front_default");
+            final RViewItems item;
+            if(imageAvailable)
+             item = new RViewItems(json.getString("name"),str,null);
+            else
+             item = new RViewItems(json.getString("name"),str,new File(getCacheDir(),path));
+
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    History.historylist.add(item);
                     ImageView img = (ImageView) findViewById(R.id.imageView);
                     if(imageAvailable==false)
                         Picasso.with(MainActivity.this).load(str).into(img);
