@@ -3,9 +3,10 @@ package arsibi_has_no_website.pokedex;
 import android.support.annotation.Nullable;
 
 import java.io.File;
+import java.io.Serializable;
 
 
-public class RViewItems {
+public class RViewItems implements Serializable{
     String name;
     String imageurl;
     File f;

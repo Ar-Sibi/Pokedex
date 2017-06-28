@@ -1,9 +1,8 @@
 package arsibi_has_no_website.pokedex;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,24 +11,23 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-
-import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -58,6 +56,32 @@ public class MainActivity extends AppCompatActivity {
         getButton = (Button) findViewById(R.id.button);
         atv = (AutoCompleteTextView) findViewById(R.id.autotext);
         atv.setAdapter(autoadapter);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        try {
+            File f = new File(getCacheDir(),"history.txt");
+            if (!f.exists())
+                f.createNewFile();
+            else{
+                ObjectInputStream inputStream =new ObjectInputStream( new FileInputStream(f));
+                History.historylist=(ArrayList<RViewItems>)inputStream.readObject();
+            }
+        }catch (IOException e){Log.d("MOO",e.toString());}catch (ClassNotFoundException e){Log.d("MOO",e.toString());}
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        try {
+            File f = new File(getCacheDir(),"history.txt");
+            f.createNewFile();
+            {
+                ObjectOutputStream outputStream =new ObjectOutputStream(new FileOutputStream(f));
+                outputStream.writeObject(History.historylist);
+            }
+        }catch (IOException e){Log.d("MOO",e.toString());}
     }
 
     public void loadImage(View v) {
