@@ -39,7 +39,9 @@ public class MainActivity extends AppCompatActivity {
     ListView stats;
     Button getButton;
     AutoCompleteTextView atv;
+    TextView nameText;
     StatsAdapter adapter;
+    ImageView icon;
     Cacher c;
     boolean imageAvailable=false;
     String path;
@@ -49,15 +51,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         getSupportActionBar().hide();
         setContentView(R.layout.activity_main);
+        nameText=(TextView)findViewById(R.id.name);
         ArrayAdapter<String> autoadapter = new ArrayAdapter<>(getApplicationContext(), R.layout.support_simple_spinner_dropdown_item, getListForAdapter());
         stats = (ListView) findViewById(R.id.statslist);
         adapter = new StatsAdapter(getApplicationContext(), R.layout.statitem, pairs);
         stats.setAdapter(adapter);
         getButton = (Button) findViewById(R.id.button);
         atv = (AutoCompleteTextView) findViewById(R.id.autotext);
+        icon=(ImageView)findViewById(R.id.imageView);
         atv.setAdapter(autoadapter);
     }
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -83,20 +86,19 @@ public class MainActivity extends AppCompatActivity {
             }
         }catch (IOException e){Log.d("MOO",e.toString());}
     }
-
-    public void loadImage(View v) {
+    public void loadData(View v) {
         getButton.setClickable(false);
         InputMethodManager inputMethodManager = (InputMethodManager) this.getSystemService(INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-        File file=new File(getCacheDir(),((AutoCompleteTextView) findViewById(R.id.autotext)).getText().toString().toLowerCase()+".jpg");
-        path=((AutoCompleteTextView) findViewById(R.id.autotext)).getText().toString().toLowerCase()+".jpg";
+        File file=new File(getCacheDir(),atv.getText().toString().toLowerCase()+".jpg");
+        path=atv.getText().toString().toLowerCase()+".jpg";
         imageAvailable=false;
         if(!file.exists())
         c=new Cacher(file);
         else
             imageAvailable=true;
         ImageHandlerTask task = new ImageHandlerTask();
-        task.execute("http://pokeapi.co/api/v2/pokemon/" + ((AutoCompleteTextView) findViewById(R.id.autotext)).getText().toString().toLowerCase());
+        task.execute("http://pokeapi.co/api/v2/pokemon/" + atv.getText().toString().toLowerCase());
     }
 
     public List<String> getListForAdapter() {
@@ -223,8 +225,7 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    TextView tv = (TextView) findViewById(R.id.name);
-                    tv.setText(str.substring(0, 1).toUpperCase() + str.substring(1));
+                    nameText.setText(str.substring(0, 1).toUpperCase() + str.substring(1));
                 }
             });
         }
@@ -279,11 +280,8 @@ public class MainActivity extends AppCompatActivity {
             String s = "None";
             String evolve = "Evolutions";
             jsonObject = jsonObject.getJSONObject("chain");
-            Log.d("MOO", "hi");
-            Log.d("MOO", jsonObject.toString());
             int index=0;
             while (jsonObject.has("species")) {
-                Log.d("MOO", "hi");
                 s = jsonObject.getJSONObject("species").getString("name");
                 Log.d("MOO", s);
                 addPairs(evolve, s.substring(0, 1).toUpperCase() + s.substring(1),index);
@@ -315,20 +313,19 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     History.historylist.add(item);
-                    ImageView img = (ImageView) findViewById(R.id.imageView);
                     if(imageAvailable==false)
-                        Picasso.with(MainActivity.this).load(str).into(img);
+                        Picasso.with(MainActivity.this).load(str).into(icon);
                     else
-                        img.setImageURI(Uri.fromFile(new File(getCacheDir(),path)));
+                        icon.setImageURI(Uri.fromFile(new File(getCacheDir(),path)));
                 }
             });
         }
         public void addPairs(String s, String z,int ... indices) {
-            int inde=-1;
+            final int index;
             if(indices.length!=0)
-                inde=indices[0];
-            Log.d("MOO",Integer.toString(inde));
-            final int index=inde;
+                index=indices[0];
+            else
+                index=-1;
             final String s1 = s;
             final String s2 = z;
             runOnUiThread(new Runnable() {
