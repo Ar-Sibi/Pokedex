@@ -1,6 +1,7 @@
 package arsibi_has_no_website.pokedex;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -8,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -50,6 +52,9 @@ public class RViewAdapter extends RecyclerView.Adapter<RViewAdapter.RViewHolder>
             Log.d("MOO","2");
             Picasso.with(context).load(items.imageurl).into(holder.icon);
         }
+        if(History.map.containsKey(History.historylist.get(position).type)){
+            holder.layout.setBackgroundColor(Color.parseColor(History.map.get(History.historylist.get(position).type)));
+        }
     }
 
     @Override
@@ -59,10 +64,12 @@ public class RViewAdapter extends RecyclerView.Adapter<RViewAdapter.RViewHolder>
     class RViewHolder extends RecyclerView.ViewHolder {
         TextView name;
         ImageView icon;
+        RelativeLayout layout;
         public RViewHolder(View itemView) {
             super(itemView);
             name=(TextView)itemView.findViewById(R.id.recycledText);
             icon=(ImageView)itemView.findViewById(R.id.recycledimage);
+            layout=(RelativeLayout)itemView.findViewById(R.id.colorrellayout);
         }
     }
 }

@@ -231,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
-
+        String storetype="dragon";
         public void putTypes(JSONObject jso) throws JSONException {
             final JSONObject json=jso;
             JSONArray arr = json.getJSONArray("types");
@@ -239,6 +239,8 @@ public class MainActivity extends AppCompatActivity {
             String type = "";
             for (int i = arr.length() - 1; i >= 0; i--) {
                 type = ((JSONObject) arr.get(i)).getJSONObject("type").getString("name");
+                if(s.equals("Type"))
+                    storetype=type;
                 addPairs(s, type.substring(0, 1).toUpperCase() + type.substring(1));
                 s = "";
             }
@@ -309,8 +311,7 @@ public class MainActivity extends AppCompatActivity {
             final RViewItems item;
             if(c!=null)
                 c.execute(str);
-            item = new RViewItems(json.getString("name"),str,new File(getCacheDir(),path));
-
+            item = new RViewItems(json.getString("name"),str,new File(getCacheDir(),path),storetype);
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
