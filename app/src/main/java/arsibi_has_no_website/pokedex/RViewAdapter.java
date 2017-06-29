@@ -37,16 +37,17 @@ public class RViewAdapter extends RecyclerView.Adapter<RViewAdapter.RViewHolder>
     @Override
     public void onBindViewHolder(RViewHolder holder, int position) {
         RViewItems items=History.historylist.get(position);
-        Log.d("MOO1",items.f.getAbsolutePath());
         holder.name.setText(items.name);
         if(items.f!=null){
             if(items.f.exists())
                 holder.icon.setImageURI(Uri.fromFile(items.f));
             else{
-                Picasso.with(context).load(items.imageurl).into(holder.icon);
+                Log.d("MOO","1");
+              Picasso.with(context).load(items.imageurl).into(holder.icon);
             }
         }
         else{
+            Log.d("MOO","2");
             Picasso.with(context).load(items.imageurl).into(holder.icon);
         }
     }

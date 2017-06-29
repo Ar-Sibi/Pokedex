@@ -410,7 +410,7 @@ Rampardos
 Shieldon
 Bastiodon
 Burmy
-Wormadam
+Wormadam-tree
 Mothim
 Combee
 Vespiquen
@@ -552,7 +552,7 @@ Sandile
 Krokorok
 Krookodile
 Darumaka
-Darmanitan
+Darmanitan-standard
 Maractus
 Dwebble
 Crustle

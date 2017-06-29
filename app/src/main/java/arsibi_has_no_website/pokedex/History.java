@@ -7,7 +7,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.View;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +50,20 @@ public class History extends AppCompatActivity {
         itemTouchHelper.attachToRecyclerView(recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        try {
+            File f = new File(getCacheDir(),"history.txt");
+            f.createNewFile();
+            {
+                ObjectOutputStream outputStream =new ObjectOutputStream(new FileOutputStream(f));
+                outputStream.writeObject(History.historylist);
+            }
+        }catch (IOException e){Log.d("MOO",e.toString());}
+    }
+
     public void clearHistory(View v){
         History.historylist.clear();
         adapter.notifyDataSetChanged();

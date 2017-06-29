@@ -2,6 +2,7 @@ package arsibi_has_no_website.pokedex;
 
 import android.os.AsyncTask;
 import android.speech.tts.Voice;
+import android.util.Log;
 import android.view.View;
 
 import java.io.File;
@@ -21,14 +22,17 @@ public class Cacher extends AsyncTask<String,Void,Void> {
     public Cacher(File f2) {
         imagefile=f2;
     }
+
     @Override
     protected Void doInBackground(String... params) {
         String resource=params[0];
         try {
+            Log.d("MOO",imagefile.getAbsolutePath());
             if (!imagefile.exists())
                 imagefile.createNewFile();
             else
                 return null;
+            Log.d("MOO",imagefile.getAbsolutePath());
             FileOutputStream fileOutputStream = new FileOutputStream(imagefile);
             URL url = new URL(resource);
             HttpURLConnection connection = (HttpURLConnection)url.openConnection();
@@ -37,10 +41,11 @@ public class Cacher extends AsyncTask<String,Void,Void> {
             while((b=inputStream.read())!=-1){
                 fileOutputStream.write(b);
             }
+
             fileOutputStream.close();
             connection.disconnect();
             inputStream.close();
-        }catch (IOException e){}
+        }catch (IOException e){Log.d("MOO",e.toString());}
         return null;
     }
 }

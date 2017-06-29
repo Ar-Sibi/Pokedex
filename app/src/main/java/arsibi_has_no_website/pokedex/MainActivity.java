@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        loadHistory();
         getSupportActionBar().hide();
         setContentView(R.layout.activity_main);
         nameText=(TextView)findViewById(R.id.name);
@@ -61,9 +62,7 @@ public class MainActivity extends AppCompatActivity {
         icon=(ImageView)findViewById(R.id.imageView);
         atv.setAdapter(autoadapter);
     }
-    @Override
-    protected void onStart() {
-        super.onStart();
+    protected void loadHistory() {
         try {
             File f = new File(getCacheDir(),"history.txt");
             if (!f.exists())
@@ -93,10 +92,13 @@ public class MainActivity extends AppCompatActivity {
         File file=new File(getCacheDir(),atv.getText().toString().toLowerCase()+".jpg");
         path=atv.getText().toString().toLowerCase()+".jpg";
         imageAvailable=false;
-        if(!file.exists())
-        c=new Cacher(file);
-        else
-            imageAvailable=true;
+        if(!file.exists()) {
+            c = new Cacher(file);
+        }
+        else {
+            imageAvailable = true;
+            c=null;
+        }
         ImageHandlerTask task = new ImageHandlerTask();
         task.execute("http://pokeapi.co/api/v2/pokemon/" + atv.getText().toString().toLowerCase());
     }
@@ -259,6 +261,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     try {
+
                         URL url = new URL(urlstr);
                         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                         String input = convertString(connection.getInputStream());
@@ -304,10 +307,9 @@ public class MainActivity extends AppCompatActivity {
         public void putImage(JSONObject json) throws JSONException {
             final String str = json.getJSONObject("sprites").getString("front_default");
             final RViewItems item;
-            if(imageAvailable)
-             item = new RViewItems(json.getString("name"),str,null);
-            else
-             item = new RViewItems(json.getString("name"),str,new File(getCacheDir(),path));
+            if(c!=null)
+                c.execute(str);
+            item = new RViewItems(json.getString("name"),str,new File(getCacheDir(),path));
 
             runOnUiThread(new Runnable() {
                 @Override
